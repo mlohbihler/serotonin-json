@@ -1,0 +1,49 @@
+Serotonin JSON is a fully featured JSON reading and writing library for Java. 
+
+- full support for generics
+- your choice of serialization mechanisms:
+  - annotations
+  - automatic property discovery
+  - write your own custom serialization code, either in the class or in a custom converter
+  - all of the above at the same time
+- descriptive error messages for malformed JSON including line and column numbers
+- pluggable class converters
+- profiles for converting the same objects in different ways within the same VM
+- lazy caching of class conversion into a shared context for super high performance
+- can read and write multiple JSON documents from/to a single stream
+- format JSON output as human-readable with line breaks and indenting if desired
+
+This is an Eclipse project. The easiest way to get started with it is to check it out into an Eclipse project.
+
+
+The quickest way to serialize an object into JSON:
+
+String json = JsonWriter.writeToString(null, myObject);
+
+
+A better way to serialize an object (that is, more optimized):
+
+StringWriter out = new StringWriter();
+new JsonWriter(out).writeObject(myObject);
+String json = out.toString();
+
+
+Reading a JSON document into JSON type classes:
+
+JsonTypeReader reader = new JsonTypeReader(jsonString);
+JsonValue jsonValue = reader.read();
+
+
+Reading into Java objects:
+
+JsonReader reader = new JsonReader(jsonString);
+MyClass myObject = reader.read(MyClass.class);
+
+Reading into a list:
+
+JsonReader reader = new JsonReader(jsonArrayString);
+List<MyClass> myObjectList = reader.read(new TypeDefinition(List.class, MyClass.class));
+
+
+Advanced conversion
+
