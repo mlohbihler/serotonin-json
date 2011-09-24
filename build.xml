@@ -23,8 +23,8 @@
 	</target>
 
 	<target name="jar" depends="clean,compile" description="Create a jar file of the compiled classes">
-		<delete file="serotonin-JSON.jar" />
-		<jar destfile="serotonin-JSON.jar">
+		<delete file="serotonin-JSON-${version}.jar" />
+		<jar destfile="serotonin-JSON-${version}.jar">
 			<fileset dir="target/classes">
 				<include name="**/*.class" />
 			</fileset>
@@ -32,8 +32,8 @@
 	</target>
 
 	<target name="src-zip" description="Create a jar file of the source">
-		<delete file="serotonin-JSON-src.zip" />
-		<zip destfile="serotonin-JSON-src.zip">
+		<delete file="serotonin-JSON-${version}-src.zip" />
+		<zip destfile="serotonin-JSON-${version}-src.zip">
 			<fileset dir="src">
 				<include name="**/*.java" />
 			</fileset>
@@ -44,8 +44,8 @@
 	</target>
 
 	<target name="doc-zip" description="Create a jar file of the javadocs">
-		<delete file="serotonin-JSON-doc.zip" />
-		<zip destfile="serotonin-JSON-doc.zip">
+		<delete file="serotonin-JSON-${version}-doc.zip" />
+		<zip destfile="serotonin-JSON-${version}-doc.zip">
 			<fileset dir="javadoc">
 				<include name="**/*" />
 			</fileset>
@@ -55,11 +55,11 @@
     <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="lib-opt/ant-contrib-1.0b3.jar" />
 	<target name="deploy" depends="jar,src-zip" description="Copy the jar file to the places where it is needed">
 		<foreach list="${deploy.jar.paths}" target="|deploy" param="todir" delimiter=":">
-			<param name="deploy.file" value="serotonin-JSON.jar" />
+			<param name="deploy.file" value="serotonin-JSON-${version}-${version}.jar" />
 		</foreach>
 
 		<foreach list="${deploy.src.paths}" target="|deploy" param="todir" delimiter=":">
-			<param name="deploy.file" value="serotonin-JSON-src.zip" />
+			<param name="deploy.file" value="serotonin-JSON-${version}-src.zip" />
 		</foreach>
 	</target>
 
