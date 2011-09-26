@@ -20,8 +20,8 @@ public class JsonArray extends JsonValue {
     public JsonArray(JsonTypeReader reader) throws JsonException {
         reader.validateNextChar('[');
         while (!reader.testNextChar(']', true)) {
-            reader.discardOptionalComma();
             elements.add(reader.read());
+            reader.discardOptionalComma();
         }
         reader.nextChar(true);
     }
