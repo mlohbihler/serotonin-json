@@ -55,7 +55,7 @@
     <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="lib-opt/ant-contrib-1.0b3.jar" />
 	<target name="deploy" depends="jar,src-zip" description="Copy the jar file to the places where it is needed">
 		<foreach list="${deploy.jar.paths}" target="|deploy" param="todir" delimiter=":">
-			<param name="deploy.file" value="serotonin-JSON-${version}-${version}.jar" />
+			<param name="deploy.file" value="serotonin-JSON-${version}.jar" />
 		</foreach>
 
 		<foreach list="${deploy.src.paths}" target="|deploy" param="todir" delimiter=":">
