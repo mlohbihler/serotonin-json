@@ -23,6 +23,7 @@ public class JsonObject extends JsonValue {
             String name = reader.readString(reader.nextElement());
             reader.validateNextChar(':');
             properties.put(name, reader.read());
+            reader.discardOptionalComma();
         }
         reader.nextChar(true);
     }
