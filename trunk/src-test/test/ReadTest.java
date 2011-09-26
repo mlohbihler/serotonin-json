@@ -30,7 +30,7 @@ public class ReadTest {
 
         read("1234567890123456789012345678901234567890.1234567890123456789012345678901234567890", BigDecimal.class);
 
-        read("[\"qwer\",\"asdf\",\"zxcv\"]", new TypeDefinition(List.class, String.class));
+        read("[\"qwer\",\"asdf\",\"zxcv\",]", new TypeDefinition(List.class, String.class));
 
         // read("{\"34\":\"34\",\"list\":[\"qwer\",\"asdf\",\"zxcv\"],\"34\":34}", new TypeDefinition(Map.class, null,
         // String.class));
@@ -44,7 +44,7 @@ public class ReadTest {
 
         context.addSerializer(new PrimitiveSerializer(), Primitives.class);
 
-        read("{\"bigi\":1234567890123456,\"bigd\":1234567890123456.7890123456789}", Primitives.class);
+        read("{\"bigi\":1234567890123456,\"bigd\":1234567890123456.7890123456789,}", Primitives.class);
 
         read("{\"myId\":\"Subclass2\",\"sub2Value\":\"sub2\",\"baseValue\":\"base\"}", Subclass2.class);
 
