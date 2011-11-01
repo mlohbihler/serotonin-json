@@ -1,5 +1,6 @@
 package com.serotonin.json.type;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,7 +18,7 @@ public class JsonObject extends JsonValue {
         // no op
     }
 
-    public JsonObject(JsonTypeReader reader) throws JsonException {
+    public JsonObject(JsonTypeReader reader) throws JsonException, IOException {
         reader.validateNextChar('{');
         while (!reader.testNextChar('}', true)) {
             String name = reader.readString(reader.nextElement());

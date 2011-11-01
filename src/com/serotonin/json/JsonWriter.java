@@ -160,6 +160,14 @@ public class JsonWriter {
         try {
             context.getConverter(value.getClass()).jsonWrite(this, value);
         }
+        catch (IOException e) {
+            // Let io exceptions through
+            throw e;
+        }
+        catch (RuntimeException e) {
+            // Let runtime exceptions through
+            throw e;
+        }
         catch (Exception e) {
             throw new JsonException("Could not write object " + value + " of class " + value.getClass(), e);
         }
@@ -220,7 +228,8 @@ public class JsonWriter {
             case '\\':
             case '"':
             case '/':
-                writer.append('\\');
+                if (context.isEscapeForwardSlash())
+                    writer.append('\\');
                 writer.append(c);
                 break;
             case '\b':

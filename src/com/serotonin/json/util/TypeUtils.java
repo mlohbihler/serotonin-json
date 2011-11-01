@@ -1,5 +1,7 @@
 package com.serotonin.json.util;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -17,6 +19,10 @@ public class TypeUtils {
             return (Class<?>) type;
         if (type instanceof ParameterizedType)
             return getRawClass(((ParameterizedType) type).getRawType());
+        if (type instanceof GenericArrayType) {
+            Type componentType = ((GenericArrayType) type).getGenericComponentType();
+            return Array.newInstance(getRawClass(componentType), 0).getClass();
+        }
         throw new RuntimeException("Unknown type: " + type);
     }
 

@@ -7,6 +7,7 @@ import java.io.StringReader;
 
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonParseException;
+import com.serotonin.json.util.MaxCharacterCountExceededException;
 import com.serotonin.json.util.ParsePositionTracker;
 
 /**
@@ -17,7 +18,8 @@ import com.serotonin.json.util.ParsePositionTracker;
  */
 public class JsonTypeReader {
     private final Reader reader;
-    private final ParsePositionTracker tracker = new ParsePositionTracker();
+    private final ParsePositionTracker tracker;
+    private final int maxCharacterCount;
 
     /**
      * Convert a string of JSON data into a type graph.
@@ -26,19 +28,30 @@ public class JsonTypeReader {
      *            the JSON data
      */
     public JsonTypeReader(String data) {
-        this(new StringReader(data));
+        this(new StringReader(data), -1);
     }
 
     /**
-     * Convert the data in an I/O reader tino a type graph.
+     * Convert the data in an I/O reader into a type graph.
      * 
      * @param reader
      */
     public JsonTypeReader(Reader reader) {
+        this(reader, -1);
+    }
+
+    /**
+     * Convert the data in an I/O reader into a type graph.
+     * 
+     * @param reader
+     */
+    public JsonTypeReader(Reader reader, int maxCharacterCount) {
         if (!reader.markSupported())
-            this.reader = new BufferedReader(reader);
-        else
-            this.reader = reader;
+            reader = new BufferedReader(reader);
+        this.reader = reader;
+
+        tracker = new ParsePositionTracker();
+        this.maxCharacterCount = maxCharacterCount;
     }
 
     /**
@@ -47,7 +60,7 @@ public class JsonTypeReader {
      * @return the JsonValue that was read. Will not be null (but could be JsonNull).
      * @throws JsonException
      */
-    public JsonValue read() throws JsonException {
+    public JsonValue read() throws JsonException, IOException {
         if (testNextChar('{', true))
             return new JsonObject(this);
         if (testNextChar('[', true))
@@ -70,37 +83,27 @@ public class JsonTypeReader {
         }
     }
 
-    private String nextChars(int length) throws JsonException {
+    private String nextChars(int length) throws JsonException, IOException {
         StringBuilder sb = new StringBuilder();
         while (length-- > 0)
             sb.append(nextChar(true));
         return sb.toString();
     }
 
-    char nextChar(boolean throwOnEos) throws JsonException {
-        try {
-            char c = readChar();
-            if (c == 0xFFFF && throwOnEos)
-                throw new JsonParseException("EOS", tracker, false);
-            return c;
-        }
-        catch (IOException e) {
-            throw new JsonParseException(e, tracker);
-        }
+    char nextChar(boolean throwOnEos) throws JsonException, IOException {
+        char c = readChar();
+        if (c == 0xFFFF && throwOnEos)
+            throw new JsonParseException("EOS", tracker, false);
+        return c;
     }
 
-    boolean testNextChar(char c, boolean throwOnEos) throws JsonException {
+    boolean testNextChar(char c, boolean throwOnEos) throws JsonException, IOException {
         skipWhitespace(throwOnEos);
-        try {
-            mark(1);
-            char n = nextChar(throwOnEos);
-            boolean result = n == c;
-            reset();
-            return result;
-        }
-        catch (IOException e) {
-            throw new JsonParseException(e, tracker);
-        }
+        mark(1);
+        char n = nextChar(throwOnEos);
+        boolean result = n == c;
+        reset();
+        return result;
     }
 
     /**
@@ -110,52 +113,46 @@ public class JsonTypeReader {
      * @return true if the end of stream has been reached.
      * @throws JsonException
      */
-    public boolean isEos() throws JsonException {
+    public boolean isEos() throws JsonException, IOException {
         return testNextChar((char) 0xFFFF, false);
     }
 
-    private void skipWhitespace(boolean throwOnEos) throws JsonException {
-        try {
-            while (true) {
-                mark(2);
-                char c = nextChar(throwOnEos);
+    private void skipWhitespace(boolean throwOnEos) throws JsonException, IOException {
+        while (true) {
+            mark(2);
+            char c = nextChar(throwOnEos);
 
-                if (c == 0xFFFF && !throwOnEos)
-                    return;
-                else if (Character.isWhitespace(c))
-                    ; // ignore
-                else if (c == '/') {
-                    // Check if this is a comment.
-                    c = nextChar(true);
-                    if (c == '*') {
-                        // Found a block comment. Look for the terminator.
-                        while (true) {
+            if (c == 0xFFFF && !throwOnEos)
+                return;
+            else if (Character.isWhitespace(c))
+                ; // ignore
+            else if (c == '/') {
+                // Check if this is a comment.
+                c = nextChar(true);
+                if (c == '*') {
+                    // Found a block comment. Look for the terminator.
+                    while (true) {
+                        c = nextChar(true);
+                        if (c == '*') {
+                            mark(1);
                             c = nextChar(true);
-                            if (c == '*') {
-                                mark(1);
-                                c = nextChar(true);
-                                if (c == '/')
-                                    // Found the terminator
-                                    break;
-                                else if (c == 0xFFFF)
-                                    throw new JsonParseException("Comment terminator not found", tracker, false);
-                                else
-                                    reset();
-                            }
-                        }
-                    }
-                    else if (c == '/') {
-                        // Found a line comment. Continue until the end of the line
-                        while (true) {
-                            c = nextChar(false);
-                            if (c == 0xA || c == 0xFFFF)
-                                // End of the line
+                            if (c == '/')
+                                // Found the terminator
                                 break;
+                            else if (c == 0xFFFF)
+                                throw new JsonParseException("Comment terminator not found", tracker, false);
+                            else
+                                reset();
                         }
                     }
-                    else {
-                        reset();
-                        break;
+                }
+                else if (c == '/') {
+                    // Found a line comment. Continue until the end of the line
+                    while (true) {
+                        c = nextChar(false);
+                        if (c == 0xA || c == 0xFFFF)
+                            // End of the line
+                            break;
                     }
                 }
                 else {
@@ -163,13 +160,16 @@ public class JsonTypeReader {
                     break;
                 }
             }
-        }
-        catch (IOException e) {
-            throw new JsonParseException(e, tracker);
+            else {
+                reset();
+                break;
+            }
+
+            checkCharacterCount();
         }
     }
 
-    String nextElement() throws JsonException {
+    String nextElement() throws JsonException, IOException {
         StringBuilder sb = new StringBuilder();
 
         discardOptionalComma();
@@ -225,54 +225,49 @@ public class JsonTypeReader {
                     if (c == '"')
                         done = true;
                 }
+                checkCharacterCount();
             }
             skipWhitespace(false);
         }
 
-        try {
-            boolean done = false;
-            while (!done) {
-                mark(1);
-                c = readChar();
-                if (c == 0xFFFF)
-                    break;
+        boolean done = false;
+        while (!done) {
+            mark(1);
+            c = readChar();
+            if (c == 0xFFFF)
+                break;
 
-                switch (c) {
-                case ',':
-                case ']':
-                case ':':
-                case '}':
-                case '"':
-                case '/':
-                    reset();
+            switch (c) {
+            case ',':
+            case ']':
+            case ':':
+            case '}':
+            case '"':
+            case '/':
+                reset();
+                done = true;
+                break;
+            default:
+                if (Character.isWhitespace(c))
                     done = true;
-                    break;
-                default:
-                    if (Character.isWhitespace(c))
-                        done = true;
-                    else
-                        sb.append(c);
-                }
+                else
+                    sb.append(c);
             }
-        }
-        catch (IOException e) {
-            throw new JsonParseException(e, tracker);
+
+            checkCharacterCount();
         }
 
         return sb.toString();
     }
 
-    void discardOptionalComma() throws JsonException {
+    void discardOptionalComma() throws JsonException, IOException {
         skipWhitespace(true);
-        try {
-            mark(1);
-            char c = nextChar(true);
-            if (c != ',')
-                reset();
-        }
-        catch (IOException e) {
-            throw new JsonParseException(e, tracker);
-        }
+        mark(1);
+        char c = nextChar(true);
+        if (c != ',')
+            reset();
+        else
+            checkCharacterCount();
     }
 
     private void mark(int readAheadLimit) throws IOException {
@@ -297,11 +292,17 @@ public class JsonTypeReader {
         return element.substring(1, element.length() - 1);
     }
 
-    void validateNextChar(char c) throws JsonException {
+    void validateNextChar(char c) throws JsonException, IOException {
         skipWhitespace(true);
         char n = nextChar(true);
         if (n != c)
             throw new JsonParseException("incorrect next character: expected '" + c + "', found '" + n + "'", tracker,
                     false);
+        checkCharacterCount();
+    }
+
+    void checkCharacterCount() throws IOException {
+        if (maxCharacterCount != -1 && tracker.getCharacterCount() > maxCharacterCount)
+            throw new MaxCharacterCountExceededException();
     }
 }

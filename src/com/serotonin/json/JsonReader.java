@@ -1,5 +1,6 @@
 package com.serotonin.json;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Type;
@@ -92,7 +93,7 @@ public class JsonReader {
     public JsonReader(JsonContext context, Reader reader) {
         this.context = context;
         includeHint = context.getDefaultIncludeHint();
-        this.reader = new JsonTypeReader(reader);
+        this.reader = new JsonTypeReader(reader, context.getMaximumDocumentLength());
         this.jsonValue = null;
     }
 
@@ -124,13 +125,13 @@ public class JsonReader {
         this.includeHint = includeHint;
     }
 
-    public boolean isDone() throws JsonException {
+    public boolean isDone() throws JsonException, IOException {
         if (reader != null)
             return reader.isEos();
         return jsonValue == null;
     }
 
-    private JsonValue next() throws JsonException {
+    private JsonValue next() throws JsonException, IOException {
         JsonValue jsonValue = null;
         if (reader != null) {
             if (!reader.isEos())
@@ -155,7 +156,7 @@ public class JsonReader {
      * @throws JsonException
      */
     @SuppressWarnings("unchecked")
-    public <T> T read(Class<T> clazz) throws JsonException {
+    public <T> T read(Class<T> clazz) throws JsonException, IOException {
         return (T) read((Type) clazz);
     }
 
@@ -169,7 +170,7 @@ public class JsonReader {
      * @return the populated object
      * @throws JsonException
      */
-    public Object read(Type type) throws JsonException {
+    public Object read(Type type) throws JsonException, IOException {
         JsonValue value = next();
         if (value == null)
             return null;
@@ -221,7 +222,7 @@ public class JsonReader {
      *            the object to populate
      * @throws JsonException
      */
-    public void readInto(Object obj) throws JsonException {
+    public void readInto(Object obj) throws JsonException, IOException {
         readInto(obj, next());
     }
 
@@ -250,7 +251,7 @@ public class JsonReader {
      *            the object to populate
      * @throws JsonException
      */
-    public void readInto(Type type, Object obj) throws JsonException {
+    public void readInto(Type type, Object obj) throws JsonException, IOException {
         readInto(type, obj, next());
     }
 

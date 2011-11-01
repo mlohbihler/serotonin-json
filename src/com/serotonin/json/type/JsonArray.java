@@ -1,5 +1,6 @@
 package com.serotonin.json.type;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class JsonArray extends JsonValue {
         // no op
     }
 
-    public JsonArray(JsonTypeReader reader) throws JsonException {
+    public JsonArray(JsonTypeReader reader) throws JsonException, IOException {
         reader.validateNextChar('[');
         while (!reader.testNextChar(']', true)) {
             elements.add(reader.read());
