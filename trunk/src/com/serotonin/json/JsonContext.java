@@ -29,9 +29,11 @@ import com.serotonin.json.convert.DoubleConverter;
 import com.serotonin.json.convert.EnumConverter;
 import com.serotonin.json.convert.FloatConverter;
 import com.serotonin.json.convert.IntegerConverter;
+import com.serotonin.json.convert.JsonArrayConverter;
 import com.serotonin.json.convert.JsonBooleanConverter;
 import com.serotonin.json.convert.JsonNullConverter;
 import com.serotonin.json.convert.JsonNumberConverter;
+import com.serotonin.json.convert.JsonObjectConverter;
 import com.serotonin.json.convert.JsonPropertyConverter;
 import com.serotonin.json.convert.JsonStringConverter;
 import com.serotonin.json.convert.LongConverter;
@@ -56,6 +58,7 @@ import com.serotonin.json.type.JsonNumber;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonString;
 import com.serotonin.json.type.JsonValue;
+import com.serotonin.json.util.MaxCharacterCountExceededException;
 import com.serotonin.json.util.SerializableProperty;
 
 /**
@@ -83,6 +86,17 @@ public class JsonContext {
     private DefaultConstructorFactory defaultConstructorFactory = new DefaultConstructorFactory();
     private String defaultIncludeHint;
 
+    /**
+     * Determines whether forward slashes ('/') in strings should be escaped (true) or not (false).
+     */
+    private boolean escapeForwardSlash = true;
+
+    /**
+     * The maximum number of characters to read before throwing a {@link MaxCharacterCountExceededException}. Setting
+     * this to -1 means that documents can be of any length. This option is useful when reading from untrusted streams.
+     */
+    private int maximumDocumentLength = -1;
+
     public JsonContext() {
         this(null);
     }
@@ -103,16 +117,18 @@ public class JsonContext {
         addConverter(new StringConverter(), String.class, Character.class, Character.TYPE);
 
         // Native JSON types
+        addConverter(new JsonArrayConverter(), JsonArray.class);
         addConverter(new JsonBooleanConverter(), JsonBoolean.class);
         addConverter(new JsonNullConverter(), JsonNull.class);
         addConverter(new JsonNumberConverter(), JsonNumber.class);
+        addConverter(new JsonObjectConverter(), JsonObject.class);
         addConverter(new JsonStringConverter(), JsonString.class);
 
         // Interface and array converters
         addConverter(new ArrayConverter(), Array.class);
-        addConverter(new CollectionConverter(), Collection.class, JsonArray.class);
+        addConverter(new CollectionConverter(), Collection.class);
         addConverter(new EnumConverter(), Enum.class);
-        addConverter(new MapConverter(), Map.class, JsonObject.class);
+        addConverter(new MapConverter(), Map.class);
 
         // Object factories
         addFactory(new ListFactory(), List.class);
@@ -427,5 +443,21 @@ public class JsonContext {
 
     public void setDefaultConstructorFactory(DefaultConstructorFactory defaultConstructorFactory) {
         this.defaultConstructorFactory = defaultConstructorFactory;
+    }
+
+    public boolean isEscapeForwardSlash() {
+        return escapeForwardSlash;
+    }
+
+    public void setEscapeForwardSlash(boolean escapeForwardSlash) {
+        this.escapeForwardSlash = escapeForwardSlash;
+    }
+
+    public int getMaximumDocumentLength() {
+        return maximumDocumentLength;
+    }
+
+    public void setMaximumDocumentLength(int maximumDocumentLength) {
+        this.maximumDocumentLength = maximumDocumentLength;
     }
 }
