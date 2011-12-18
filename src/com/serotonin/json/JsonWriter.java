@@ -25,7 +25,7 @@ public class JsonWriter {
      * @throws JsonException
      * @throws IOException
      */
-    public static String writeToString(JsonContext context, Object value) throws JsonException, IOException {
+    public static String writeToString(JsonContext context, Object value) throws JsonException {
         if (context == null)
             context = new JsonContext();
 
@@ -33,7 +33,13 @@ public class JsonWriter {
         JsonWriter writer = new JsonWriter(context, out);
         writer.setPrettyOutput(true);
         writer.setPrettyIndent(2);
-        writer.writeObject(value);
+        try {
+            writer.writeObject(value);
+        }
+        catch (IOException e) {
+            // This should never happen because we are writing to a StringWriter
+            throw new RuntimeException(e);
+        }
         return out.toString();
     }
 
