@@ -38,6 +38,7 @@ import com.serotonin.json.convert.JsonPropertyConverter;
 import com.serotonin.json.convert.JsonStringConverter;
 import com.serotonin.json.convert.LongConverter;
 import com.serotonin.json.convert.MapConverter;
+import com.serotonin.json.convert.ObjectConverter;
 import com.serotonin.json.convert.SerializerConverter;
 import com.serotonin.json.convert.ShortConverter;
 import com.serotonin.json.convert.StringConverter;
@@ -51,6 +52,7 @@ import com.serotonin.json.spi.JsonEntity;
 import com.serotonin.json.spi.JsonProperty;
 import com.serotonin.json.spi.JsonSerializable;
 import com.serotonin.json.spi.ObjectFactory;
+import com.serotonin.json.spi.TypeResolver;
 import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonBoolean;
 import com.serotonin.json.type.JsonNull;
@@ -82,6 +84,7 @@ import com.serotonin.json.util.SerializableProperty;
  */
 public class JsonContext {
     private final Map<Class<?>, ClassConverter> classConverters = new ConcurrentHashMap<Class<?>, ClassConverter>();
+    private final Map<Class<?>, TypeResolver> typeResolvers = new ConcurrentHashMap<Class<?>, TypeResolver>();
     private final Map<Class<?>, ObjectFactory> objectFactories = new ConcurrentHashMap<Class<?>, ObjectFactory>();
     private DefaultConstructorFactory defaultConstructorFactory = new DefaultConstructorFactory();
     private String defaultIncludeHint;
@@ -115,6 +118,7 @@ public class JsonContext {
         addConverter(new BigIntegerConverter(), BigInteger.class);
         addConverter(new BigDecimalConverter(), BigDecimal.class);
         addConverter(new StringConverter(), String.class, Character.class, Character.TYPE);
+        addConverter(new ObjectConverter(), Object.class);
 
         // Native JSON types
         addConverter(new JsonArrayConverter(), JsonArray.class);
@@ -401,6 +405,31 @@ public class JsonContext {
         }
 
         return jsonProperties;
+    }
+
+    /**
+     * Register an {@link TypeResolver} against the given list of classes.
+     * 
+     * @param resolver
+     *            the type resolver to register
+     * 
+     * @param classes
+     *            the classes to which the resolver should be bound.
+     */
+    public void addResolver(TypeResolver resolver, Class<?>... classes) {
+        for (Class<?> clazz : classes)
+            typeResolvers.put(clazz, resolver);
+    }
+
+    /**
+     * Returns the {@link TypeResolver} bound to the given class.
+     * 
+     * @param clazz
+     *            the class to look up
+     * @return the type resolver, or null if not found.
+     */
+    public TypeResolver getResolver(Class<?> clazz) {
+        return typeResolvers.get(clazz);
     }
 
     /**

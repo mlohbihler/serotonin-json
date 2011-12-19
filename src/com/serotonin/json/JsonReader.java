@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.lang.reflect.Type;
 
 import com.serotonin.json.spi.ClassConverter;
+import com.serotonin.json.spi.TypeResolver;
 import com.serotonin.json.type.JsonTypeReader;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.json.util.TypeUtils;
@@ -210,6 +211,13 @@ public class JsonReader {
             return null;
 
         Class<?> clazz = TypeUtils.getRawClass(type);
+
+        TypeResolver resolver = context.getResolver(clazz);
+        if (resolver != null) {
+            type = resolver.resolve(jsonValue);
+            clazz = TypeUtils.getRawClass(type);
+        }
+
         ClassConverter converter = context.getConverter(clazz);
         Object value = converter.jsonRead(this, jsonValue, type);
         return value;
