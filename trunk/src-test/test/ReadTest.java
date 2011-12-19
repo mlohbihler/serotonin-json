@@ -24,6 +24,7 @@ public class ReadTest {
         read("\"k\"", new JsonString(""), JsonString.class);
         read("{\"bigi\":1234567890123456,\"bigd\":1234567890123456.7890123456789,}", JsonObject.class);
         read("{\"bigi\":1234567890123456,\"bigd\":1234567890123456.7890123456789,}", new JsonObject(), JsonObject.class);
+        read("{\"bigi\":1234567890123456,\"bigd\":1234567890123456.7890123456789,}", Object.class);
         read("[\"qwer\",\"asdf\",\"zxcv\",]", JsonArray.class);
         read("[\"qwer\",\"asdf\",\"zxcv\",]", new JsonArray(), JsonArray.class);
 
