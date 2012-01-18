@@ -233,6 +233,9 @@ public class JsonWriter {
             switch (c) {
             case '\\':
             case '"':
+                writer.append('\\');
+                writer.append(c);
+                break;
             case '/':
                 if (context.isEscapeForwardSlash())
                     writer.append('\\');
