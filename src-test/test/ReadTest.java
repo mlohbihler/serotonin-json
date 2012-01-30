@@ -64,6 +64,9 @@ public class ReadTest {
 
         read("[\"qwer\",\"asdf\",\"zxcv\"]", new ArrayList<String>(), new TypeDefinition(List.class, String.class));
 
+        read("{\"imSerializable\":{\"id\":12,\"value\":\"my value\"},\"list1\":null,\"list2\":null,\"map\":null,\"primitives\":{\"bigi\":1234567890123456,\"bigd\":1234567890123456.7890123456789},\"uuid\":\"ad9557f1-5e88-4b74-ab51-5b64364e6ccf\"}",
+                Compound.class);
+
         read("[[\"a1\",\"b1\",\"c1\"],[\"a2\",\"b2\",\"c2\"],[\"a3\",\"b3\",\"c3\"]]", new TypeDefinition(List.class,
                 String[].class));
 

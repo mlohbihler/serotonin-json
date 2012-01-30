@@ -2,6 +2,7 @@ package test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class Compound {
     private Primitives primitives = new Primitives();
@@ -9,6 +10,7 @@ public class Compound {
     private List<? extends BaseClass> list2;
     private Map<?, ?> map;
     private ImSerializable imSerializable = new ImSerializable();
+    private UUID uuid = UUID.randomUUID();
 
     public Primitives getPrimitives() {
         return primitives;
@@ -48,5 +50,13 @@ public class Compound {
 
     public void setImSerializable(ImSerializable imSerializable) {
         this.imSerializable = imSerializable;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 }

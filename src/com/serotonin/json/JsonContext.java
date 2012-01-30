@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
@@ -42,6 +43,7 @@ import com.serotonin.json.convert.ObjectConverter;
 import com.serotonin.json.convert.SerializerConverter;
 import com.serotonin.json.convert.ShortConverter;
 import com.serotonin.json.convert.StringConverter;
+import com.serotonin.json.convert.UUIDConverter;
 import com.serotonin.json.factory.DefaultConstructorFactory;
 import com.serotonin.json.factory.ListFactory;
 import com.serotonin.json.factory.MapFactory;
@@ -134,6 +136,9 @@ public class JsonContext {
         addConverter(new EnumConverter(), Enum.class);
         addConverter(new MapConverter(), Map.class);
 
+        // Other converters
+        addConverter(new UUIDConverter(), UUID.class);
+
         // Object factories
         addFactory(new ListFactory(), List.class);
         addFactory(new MapFactory(), Map.class);
@@ -190,6 +195,17 @@ public class JsonContext {
         ClassConverter converter = classConverters.get(clazz);
         if (converter != null)
             return converter;
+
+        // Check for inheritance
+        Class<?> sc = clazz.getSuperclass();
+        while (sc != null && sc != Object.class) {
+            converter = classConverters.get(sc);
+            if (converter != null) {
+                classConverters.put(clazz, converter);
+                return converter;
+            }
+            sc = sc.getSuperclass();
+        }
 
         // Check for enum
         if (Enum.class.isAssignableFrom(clazz)) {

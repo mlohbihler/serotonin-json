@@ -46,6 +46,8 @@ public class WriteTest {
         sc2.setBaseValue("base");
         sc2.setSub2Value("sub2");
         write(sc2);
+
+        write(new Compound());
     }
 
     static void write(Object o) throws Exception {
