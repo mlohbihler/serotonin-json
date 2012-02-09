@@ -12,40 +12,28 @@ abstract public class JsonValue {
         return false;
     }
 
-    public JsonArray toJsonArray() throws JsonException {
-        if (this instanceof JsonArray)
-            return (JsonArray) this;
-        throw new JsonException("Cannot cast " + getClass() + " to JsonArray");
+    public JsonArray toJsonArray() {
+        return (JsonArray) this;
     }
 
-    public JsonBoolean toJsonBoolean() throws JsonException {
-        if (this instanceof JsonBoolean)
-            return (JsonBoolean) this;
-        throw new JsonException("Cannot cast " + getClass() + " to JsonBoolean");
+    public JsonBoolean toJsonBoolean() {
+        return (JsonBoolean) this;
     }
 
-    public JsonNull toJsonNull() throws JsonException {
-        if (this instanceof JsonNull)
-            return (JsonNull) this;
-        throw new JsonException("Cannot cast " + getClass() + " to JsonNull");
+    public JsonNull toJsonNull() {
+        return (JsonNull) this;
     }
 
-    public JsonNumber toJsonNumber() throws JsonException {
-        if (this instanceof JsonNumber)
-            return (JsonNumber) this;
-        throw new JsonException("Cannot cast " + getClass() + " to JsonNumber");
+    public JsonNumber toJsonNumber() {
+        return (JsonNumber) this;
     }
 
-    public JsonObject toJsonObject() throws JsonException {
-        if (this instanceof JsonObject)
-            return (JsonObject) this;
-        throw new JsonException("Cannot cast " + getClass() + " to JsonObject");
+    public JsonObject toJsonObject() {
+        return (JsonObject) this;
     }
 
-    public JsonString toJsonString() throws JsonException {
-        if (this instanceof JsonString)
-            return (JsonString) this;
-        throw new JsonException("Cannot cast " + getClass() + " to JsonString");
+    public JsonString toJsonString() {
+        return (JsonString) this;
     }
 
     public JsonValue getJsonValue(String... path) throws JsonException {
