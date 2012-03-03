@@ -48,6 +48,8 @@ public class WriteTest {
         write(sc2);
 
         write(new Compound());
+
+        write(new SerTest());
     }
 
     static void write(Object o) throws Exception {
