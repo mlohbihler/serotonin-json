@@ -263,7 +263,7 @@ public class JsonContext {
         while (currentClazz != Object.class) {
             boolean annotationsFound = addAnnotatedProperties(currentClazz, descriptors, properties);
 
-            if (!annotationsFound && !currentClazz.isAnnotationPresent(JsonEntity.class))
+            if (!annotationsFound && !currentClazz.isAnnotationPresent(JsonEntity.class) && !jsonSerializable)
                 // Not annotated and no property annotations were found. Consider it a POJO.
                 addPojoProperties(currentClazz, descriptors, properties);
 
