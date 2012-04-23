@@ -152,18 +152,18 @@ public class JsonPropertyConverter extends AbstractClassConverter {
 
                 Type propType = writeMethod.getGenericParameterTypes()[0];
                 propType = TypeUtils.resolveTypeVariable(type, propType);
-                Object propValue = reader.read(propType, propJsonValue);
-
                 Class<?> propClass = TypeUtils.getRawClass(propType);
 
-                if (propClass.isPrimitive() && propValue == null) {
-                    if (propClass == Boolean.TYPE)
-                        propValue = false;
-                    else
-                        propValue = 0;
-                }
-
                 try {
+                    Object propValue = reader.read(propType, propJsonValue);
+
+                    if (propClass.isPrimitive() && propValue == null) {
+                        if (propClass == Boolean.TYPE)
+                            propValue = false;
+                        else
+                            propValue = 0;
+                    }
+
                     prop.getWriteMethod().invoke(obj, propValue);
                 }
                 catch (Exception e) {
