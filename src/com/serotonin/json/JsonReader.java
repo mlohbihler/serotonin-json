@@ -18,6 +18,12 @@ import com.serotonin.json.util.TypeUtils;
  * @author Matthew Lohbihler
  */
 public class JsonReader {
+    @SuppressWarnings("unchecked")
+    public static <T> T toObject(JsonContext context, JsonValue json, Type type) throws JsonException {
+        JsonReader reader = new JsonReader(context, (JsonValue) null);
+        return (T) reader.read(type, json);
+    }
+
     /**
      * The reader's context.
      */
