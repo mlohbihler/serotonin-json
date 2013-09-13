@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.math.BigDecimal;
 
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonParseException;
@@ -62,21 +63,21 @@ public class JsonTypeReader {
      */
     public JsonValue read() throws JsonException, IOException {
         if (testNextChar('{', true))
-            return new JsonObject(this);
+            return readObject();
         if (testNextChar('[', true))
-            return new JsonArray(this);
+            return readArray();
 
         String element = nextElement();
         if (element.startsWith("\""))
-            return new JsonString(this, element);
+            return new JsonString(readString(element));
         if ("null".equals(element))
-            return new JsonNull();
+            return null;
         if ("true".equals(element))
             return new JsonBoolean(true);
         if ("false".equals(element))
             return new JsonBoolean(false);
         try {
-            return new JsonNumber(element);
+            return new JsonNumber(new BigDecimal(element));
         }
         catch (NumberFormatException e) {
             throw new JsonParseException("Value is not null, true, false, or a number", tracker, true);
@@ -114,7 +115,14 @@ public class JsonTypeReader {
      * @throws JsonException
      */
     public boolean isEos() throws JsonException, IOException {
-        return testNextChar((char) 0xFFFF, false);
+        try {
+            return testNextChar((char) 0xFFFF, false);
+        }
+        catch (IOException e) {
+            if ("Stream closed".equals(e.getMessage()))
+                return true;
+            throw e;
+        }
     }
 
     private void skipWhitespace(boolean throwOnEos) throws JsonException, IOException {
@@ -304,5 +312,35 @@ public class JsonTypeReader {
     void checkCharacterCount() throws IOException {
         if (maxCharacterCount != -1 && tracker.getCharacterCount() > maxCharacterCount)
             throw new MaxCharacterCountExceededException();
+    }
+
+    //
+    // Native readers
+    private JsonObject readObject() throws JsonException, IOException {
+        JsonObject object = new JsonObject();
+
+        validateNextChar('{');
+        while (!testNextChar('}', true)) {
+            String name = readString(nextElement());
+            validateNextChar(':');
+            object.put(name, read());
+            discardOptionalComma();
+        }
+        nextChar(true);
+
+        return object;
+    }
+
+    private JsonArray readArray() throws JsonException, IOException {
+        JsonArray array = new JsonArray();
+
+        validateNextChar('[');
+        while (!testNextChar(']', true)) {
+            array.add(read());
+            discardOptionalComma();
+        }
+        nextChar(true);
+
+        return array;
     }
 }

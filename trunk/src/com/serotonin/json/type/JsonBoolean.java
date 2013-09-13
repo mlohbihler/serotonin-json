@@ -1,27 +1,18 @@
 package com.serotonin.json.type;
 
-/**
- * Extends JsonValue to represent a boolean.
- * 
- * @author Matthew Lohbihler
- */
 public class JsonBoolean extends JsonValue {
-    private boolean value;
+    private final boolean delegate;
 
-    public JsonBoolean(boolean value) {
-        this.value = value;
+    public JsonBoolean(boolean b) {
+        this.delegate = b;
     }
 
-    public boolean getValue() {
-        return value;
-    }
-
-    public void setValue(boolean value) {
-        this.value = value;
+    public boolean booleanValue() {
+        return delegate;
     }
 
     @Override
     public String toString() {
-        return Boolean.toString(value);
+        return Boolean.toString(delegate);
     }
 }

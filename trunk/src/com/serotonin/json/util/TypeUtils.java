@@ -6,8 +6,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 /**
  * Utilities for determining generic type information.
  * 
@@ -41,7 +39,7 @@ public class TypeUtils {
             Class<?> typeClass = getRawClass(type);
             TypeVariable<?>[] typeVars = typeClass.getTypeParameters();
 
-            int index = ArrayUtils.indexOf(typeVars, typeVar);
+            int index = Utils.indexOf(typeVars, typeVar);
 
             return ((ParameterizedType) type).getActualTypeArguments()[index];
         }

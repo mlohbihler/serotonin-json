@@ -2,8 +2,6 @@ package com.serotonin.json.util;
 
 import java.lang.reflect.Method;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 /**
  * Describes how any given attribute of an object can be serialized/deserialized to/from JSON.
  * 
@@ -21,7 +19,7 @@ public class SerializableProperty {
         // If no hints were specified, always include.
         if (includeHints == null || includeHints.length == 0)
             return true;
-        return ArrayUtils.contains(includeHints, includeHint);
+        return Utils.contains(includeHints, includeHint);
     }
 
     public String getNameToUse() {

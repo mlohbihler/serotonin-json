@@ -16,9 +16,9 @@ public class SubclassTest {
         context.addResolver(new TypeResolver() {
             @Override
             public Class<?> resolve(JsonValue jsonValue) throws JsonException {
-                if (jsonValue.toJsonObject().hasProperty("sub1Value"))
+                if (jsonValue.toJsonObject().containsKey("sub1Value"))
                     return Subclass1.class;
-                if (jsonValue.toJsonObject().hasProperty("sub2Value"))
+                if (jsonValue.toJsonObject().containsKey("sub2Value"))
                     return Subclass2.class;
                 throw new JsonException("Unknown BaseClass: " + jsonValue);
             }

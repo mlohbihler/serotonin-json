@@ -11,13 +11,10 @@ import com.serotonin.json.JsonReader;
 import com.serotonin.json.JsonWriter;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.spi.JsonSerializable;
-import com.serotonin.json.type.JsonArray;
-import com.serotonin.json.type.JsonBoolean;
-import com.serotonin.json.type.JsonNull;
-import com.serotonin.json.type.JsonNumber;
 import com.serotonin.json.type.JsonObject;
-import com.serotonin.json.type.JsonString;
+import com.serotonin.json.type.JsonTypeWriter;
 import com.serotonin.json.type.JsonValue;
+import com.serotonin.json.type.ObjectTypeWriter;
 import com.serotonin.json.util.SerializableProperty;
 import com.serotonin.json.util.TypeUtils;
 
@@ -46,16 +43,32 @@ public class JsonPropertyConverter extends AbstractClassConverter {
     }
 
     @Override
-    public void jsonWrite(JsonWriter writer, Object value) throws IOException, JsonException {
-        ObjectWriter objectWriter = new ObjectWriter(writer);
+    public JsonValue jsonWrite(JsonTypeWriter writer, Object value) throws JsonException {
+        ObjectTypeWriter otw = new ObjectTypeWriter(writer);
+        try {
+            jsonWrite(writer.getIncludeHint(), value, otw);
+            return otw.getJsonObject();
+        }
+        catch (IOException e) {
+            // Should never happen
+            throw new RuntimeException(e);
+        }
+    }
 
+    @Override
+    public void jsonWrite(JsonWriter writer, Object value) throws IOException, JsonException {
+        jsonWrite(writer.getIncludeHint(), value, new ObjectJsonWriter(writer));
+    }
+
+    public void jsonWrite(String includeHint, Object value, ObjectWriter objectWriter) throws IOException,
+            JsonException {
         if (jsonSerializable)
             ((JsonSerializable) value).jsonWrite(objectWriter);
 
         if (properties != null) {
             for (SerializableProperty prop : properties) {
                 // Check whether the property should be included
-                if (!prop.include(writer.getIncludeHint()))
+                if (!prop.include(includeHint))
                     continue;
 
                 Method readMethod = prop.getReadMethod();
@@ -99,18 +112,6 @@ public class JsonPropertyConverter extends AbstractClassConverter {
                             ignore = (Byte) propertyValue == 0;
                         else if (propertyClass == Character.TYPE)
                             ignore = (Character) propertyValue == 0;
-                        else if (propertyClass == JsonNull.class)
-                            ignore = true;
-                        else if (propertyClass == JsonBoolean.class)
-                            ignore = ((JsonBoolean) propertyValue).getValue() == false;
-                        else if (propertyClass == JsonNumber.class)
-                            ignore = ((JsonNumber) propertyValue).getDoubleValue() == 0;
-                        else if (propertyClass == JsonString.class)
-                            ignore = ((JsonString) propertyValue).getValue() == null;
-                        else if (propertyClass == JsonArray.class)
-                            ignore = ((JsonArray) propertyValue).getElements() == null;
-                        else if (propertyClass == JsonObject.class)
-                            ignore = ((JsonObject) propertyValue).getProperties() == null;
                     }
                 }
 
@@ -129,7 +130,7 @@ public class JsonPropertyConverter extends AbstractClassConverter {
 
     @Override
     public void jsonRead(JsonReader reader, JsonValue jsonValue, Object obj, Type type) throws JsonException {
-        JsonObject jsonObject = jsonValue.toJsonObject();
+        JsonObject jsonObject = (JsonObject) jsonValue;
 
         if (jsonSerializable)
             ((JsonSerializable) obj).jsonRead(reader, jsonObject);
@@ -146,7 +147,7 @@ public class JsonPropertyConverter extends AbstractClassConverter {
 
                 String name = prop.getNameToUse();
 
-                JsonValue propJsonValue = jsonObject.getValue(name);
+                JsonValue propJsonValue = jsonObject.get(name);
                 if (propJsonValue == null)
                     continue;
 

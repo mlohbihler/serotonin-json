@@ -213,7 +213,7 @@ public class JsonReader {
      * @throws JsonException
      */
     public Object read(Type type, JsonValue jsonValue) throws JsonException {
-        if (jsonValue.isNull())
+        if (jsonValue == null)
             return null;
 
         Class<?> clazz = TypeUtils.getRawClass(type);
@@ -282,7 +282,7 @@ public class JsonReader {
      * @throws JsonException
      */
     public void readInto(Type type, Object obj, JsonValue jsonValue) throws JsonException {
-        if (obj == null || jsonValue == null || jsonValue.isNull())
+        if (obj == null || jsonValue == null)
             return;
 
         Class<?> clazz = TypeUtils.getRawClass(type);

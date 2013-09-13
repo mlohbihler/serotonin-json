@@ -6,6 +6,8 @@ import java.lang.reflect.Type;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.JsonWriter;
+import com.serotonin.json.type.JsonString;
+import com.serotonin.json.type.JsonTypeWriter;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.web.i18n.LocalizableMessage;
 import com.serotonin.web.i18n.LocalizableMessageParseException;
@@ -16,6 +18,12 @@ import com.serotonin.web.i18n.LocalizableMessageParseException;
  * @author Matthew Lohbihler
  */
 public class LocalizableMessageJsonConverter extends ImmutableClassConverter {
+    @Override
+    public JsonValue jsonWrite(JsonTypeWriter writer, Object value) {
+        return new JsonString(((LocalizableMessage) value).serialize());
+    }
+
+    @Override
     public void jsonWrite(JsonWriter writer, Object value) throws IOException {
         writer.quote(((LocalizableMessage) value).serialize());
     }
@@ -24,9 +32,8 @@ public class LocalizableMessageJsonConverter extends ImmutableClassConverter {
     public Object jsonRead(JsonReader reader, JsonValue jsonValue, Type type) throws JsonException {
         LocalizableMessage m = null;
 
-        String s = jsonValue.toJsonString().getValue();
         try {
-            m = LocalizableMessage.deserialize(s);
+            m = LocalizableMessage.deserialize(jsonValue.toString());
         }
         catch (LocalizableMessageParseException e) {
             // Wrap in json exception and rethrow

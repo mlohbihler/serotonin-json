@@ -3,93 +3,47 @@ package com.serotonin.json.type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-/**
- * Extends JsonValue to represent a number.
- * 
- * @author Matthew Lohbihler
- */
 public class JsonNumber extends JsonValue {
-    private String value;
+    private final BigDecimal delegate;
 
-    public JsonNumber(byte value) {
-        this.value = Byte.toString(value);
+    public JsonNumber(BigDecimal delegate) {
+        this.delegate = delegate;
     }
 
-    public JsonNumber(short value) {
-        this.value = Short.toString(value);
+    public byte byteValue() {
+        return delegate.byteValue();
     }
 
-    public JsonNumber(int value) {
-        this.value = Integer.toString(value);
+    public short shortValue() {
+        return delegate.shortValue();
     }
 
-    public JsonNumber(long value) {
-        this.value = Long.toString(value);
+    public int intValue() {
+        return delegate.intValue();
     }
 
-    public JsonNumber(float value) {
-        this.value = Float.toString(value);
+    public long longValue() {
+        return delegate.longValue();
     }
 
-    public JsonNumber(double value) {
-        this.value = Double.toString(value);
+    public float floatValue() {
+        return delegate.floatValue();
     }
 
-    public JsonNumber(Number value) {
-        if (value == null)
-            this.value = "0";
-        else
-            this.value = value.toString();
+    public double doubleValue() {
+        return delegate.doubleValue();
     }
 
-    public JsonNumber(String value) throws NumberFormatException {
-        // Test the value.
-        Double.parseDouble(value);
-        this.value = value;
+    public BigDecimal bigDecimalValue() {
+        return delegate;
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public Byte getByteValue() {
-        return Byte.parseByte(value);
-    }
-
-    public Short getShortValue() {
-        return Short.parseShort(value);
-    }
-
-    public Integer getIntValue() {
-        return Integer.parseInt(value);
-    }
-
-    public Long getLongValue() {
-        return Long.parseLong(value);
-    }
-
-    public Float getFloatValue() {
-        return Float.parseFloat(value);
-    }
-
-    public Double getDoubleValue() {
-        return Double.parseDouble(value);
-    }
-
-    public BigInteger getBigInteger() {
-        return new BigInteger(value);
-    }
-
-    public BigDecimal getBigDecimal() {
-        return new BigDecimal(value);
+    public BigInteger bigIntegerValue() {
+        return delegate.toBigInteger();
     }
 
     @Override
     public String toString() {
-        return value;
+        return delegate.toString();
     }
 }

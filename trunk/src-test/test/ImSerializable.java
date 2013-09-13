@@ -22,8 +22,8 @@ public class ImSerializable implements JsonSerializable {
 
     @Override
     public void jsonRead(JsonReader reader, JsonObject jsonObject) throws JsonException {
-        id = jsonObject.getValue("id").toJsonNumber().getIntValue();
-        value = jsonObject.getValue("value").toJsonString().getValue();
+        id = jsonObject.getInt("id");
+        value = jsonObject.getString("value");
     }
 
     public int getId() {

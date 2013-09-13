@@ -17,8 +17,14 @@ public class ReadTypeTest {
             "{\"myId\":\"Subclass2\",\"sub2Value\":\"sub2\",\"baseValue\":\"base\"}", };
 
     public static void main(String[] args) throws Exception {
-        for (String data : json)
-            read(data);
+        for (String data : json) {
+            try {
+                read(data);
+            }
+            catch (Exception e) {
+                throw new Exception("Error reading '" + data + "'", e);
+            }
+        }
     }
 
     static void read(String data) throws Exception {

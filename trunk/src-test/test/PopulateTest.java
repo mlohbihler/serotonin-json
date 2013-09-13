@@ -20,9 +20,9 @@ public class PopulateTest {
         context.addFactory(new ObjectFactory() {
             @Override
             public Object create(JsonValue jsonValue) throws JsonException {
-                if (jsonValue.toJsonObject().hasProperty("sub1Value"))
+                if (jsonValue.toJsonObject().containsKey("sub1Value"))
                     return new Subclass1();
-                if (jsonValue.toJsonObject().hasProperty("sub2Value"))
+                if (jsonValue.toJsonObject().containsKey("sub2Value"))
                     return new Subclass2();
                 throw new JsonException("Unknown BaseClass: " + jsonValue);
             }

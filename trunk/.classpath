@@ -8,8 +8,7 @@
 	</classpathentry>
 	<classpathentry kind="src" path="src-junit"/>
 	<classpathentry kind="src" path="src-test"/>
-	<classpathentry kind="lib" path="lib/commons-lang3-3.0.jar"/>
-	<classpathentry kind="lib" path="lib/seroUtils.jar"/>
 	<classpathentry kind="lib" path="lib-opt/junit-4.9b2.jar"/>
+	<classpathentry kind="lib" path="lib/seroUtils.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

@@ -6,6 +6,7 @@ import java.lang.reflect.Type;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.JsonWriter;
+import com.serotonin.json.type.JsonTypeWriter;
 import com.serotonin.json.type.JsonValue;
 
 /**
@@ -15,6 +16,15 @@ import com.serotonin.json.type.JsonValue;
  * @author Matthew Lohbihler
  */
 public interface ClassConverter {
+    /**
+     * Converts the given object into the equivalent JSON type object.
+     * 
+     * @param value
+     *            the object to write
+     * @throws JsonException
+     */
+    JsonValue jsonWrite(JsonTypeWriter writer, Object value) throws JsonException;
+
     /**
      * Write the given object into the JSON writer.
      * 

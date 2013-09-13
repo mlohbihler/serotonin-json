@@ -1,63 +1,28 @@
 package com.serotonin.json.type;
 
-import com.serotonin.json.JsonException;
+import java.math.BigDecimal;
 
-/**
- * The base class of all native JSON types.
- * 
- * @author Matthew Lohbihler
- */
 abstract public class JsonValue {
-    public boolean isNull() {
-        return false;
+    public JsonObject toJsonObject() {
+        return (JsonObject) this;
     }
 
     public JsonArray toJsonArray() {
         return (JsonArray) this;
     }
 
-    public JsonBoolean toJsonBoolean() {
-        return (JsonBoolean) this;
-    }
-
-    public JsonNull toJsonNull() {
-        return (JsonNull) this;
-    }
-
-    public JsonNumber toJsonNumber() {
-        return (JsonNumber) this;
-    }
-
-    public JsonObject toJsonObject() {
-        return (JsonObject) this;
-    }
-
-    public JsonString toJsonString() {
-        return (JsonString) this;
-    }
-
-    public JsonValue getJsonValue(String... path) throws JsonException {
+    public JsonValue getJsonValue(String... path) {
         if (path.length == 0)
             return this;
         return getJsonValue(this, path, 0);
     }
 
-    private JsonValue getJsonValue(JsonValue value, String[] path, int index) throws JsonException {
-        if (value instanceof JsonObject) {
-            JsonObject o = (JsonObject) value;
-            value = o.getValue(path[index]);
-        }
+    private JsonValue getJsonValue(JsonValue value, String[] path, int index) {
+        if (value instanceof JsonObject)
+            value = value.toJsonObject().get(path[index]);
         else if (value instanceof JsonArray) {
-            int arrIndex;
-            try {
-                arrIndex = Integer.parseInt(path[index]);
-            }
-            catch (NumberFormatException e) {
-                throw new JsonException("Could not convert path element '" + path[index] + " to integer for JsonArray");
-            }
-
-            JsonArray a = (JsonArray) value;
-            value = a.getElements().get(arrIndex);
+            int arrIndex = Integer.parseInt(path[index]);
+            value = value.toJsonArray().get(arrIndex);
         }
         else
             return null;
@@ -66,5 +31,23 @@ abstract public class JsonValue {
             return value;
 
         return getJsonValue(value, path, index + 1);
+    }
+
+    public boolean toBoolean() {
+        return ((JsonBoolean) this).booleanValue();
+    }
+
+    public BigDecimal toNumber() {
+        return ((JsonNumber) this).bigDecimalValue();
+    }
+
+    public Object toNative() {
+        if (this instanceof JsonBoolean)
+            return ((JsonBoolean) this).toBoolean();
+        if (this instanceof JsonString)
+            return ((JsonString) this).toString();
+        if (this instanceof JsonNumber)
+            return ((JsonNumber) this).bigDecimalValue();
+        return this;
     }
 }

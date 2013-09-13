@@ -21,7 +21,7 @@ public class JsonObjectConverter extends MapConverter {
     @Override
     public void jsonRead(JsonReader reader, JsonValue jsonValue, Object obj, Type type) throws JsonException {
         JsonObject jsonObject = (JsonObject) obj;
-        jsonObject.getProperties().clear();
-        jsonObject.getProperties().putAll(jsonValue.toJsonObject().getProperties());
+        jsonObject.clear();
+        jsonObject.putAll(jsonValue.toJsonObject());
     }
 }

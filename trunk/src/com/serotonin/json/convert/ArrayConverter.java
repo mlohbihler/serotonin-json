@@ -3,13 +3,13 @@ package com.serotonin.json.convert;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
-import java.util.List;
 
 import com.serotonin.json.JsonContext;
 import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.JsonWriter;
 import com.serotonin.json.type.JsonArray;
+import com.serotonin.json.type.JsonTypeWriter;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.json.util.TypeUtils;
 
@@ -19,6 +19,15 @@ import com.serotonin.json.util.TypeUtils;
  * @author Matthew Lohbihler
  */
 public class ArrayConverter extends AbstractClassConverter {
+    @Override
+    public JsonValue jsonWrite(JsonTypeWriter writer, Object value) throws JsonException {
+        int length = Array.getLength(value);
+        JsonArray jsonArray = new JsonArray();
+        for (int i = 0; i < length; i++)
+            jsonArray.add(writer.writeObject(Array.get(value, i)));
+        return jsonArray;
+    }
+
     @Override
     public void jsonWrite(JsonWriter writer, Object value) throws IOException, JsonException {
         writer.append('[');
@@ -37,19 +46,19 @@ public class ArrayConverter extends AbstractClassConverter {
 
     @Override
     protected Object newInstance(JsonContext context, JsonValue jsonValue, Type type) {
-        List<JsonValue> elements = ((JsonArray) jsonValue).getElements();
+        JsonArray jsonArray = (JsonArray) jsonValue;
         Class<?> clazz = TypeUtils.getRawClass(type).getComponentType();
-        return Array.newInstance(clazz, elements.size());
+        return Array.newInstance(clazz, jsonArray.size());
     }
 
     @Override
     public void jsonRead(JsonReader reader, JsonValue jsonValue, Object array, Type type) throws JsonException {
-        List<JsonValue> elements = ((JsonArray) jsonValue).getElements();
+        JsonArray jsonArray = (JsonArray) jsonValue;
         Class<?> clazz = array.getClass().getComponentType();
 
-        for (int i = 0; i < elements.size(); i++) {
+        for (int i = 0; i < jsonArray.size(); i++) {
             try {
-                Array.set(array, i, reader.read(clazz, elements.get(i)));
+                Array.set(array, i, reader.read(clazz, jsonArray.get(i)));
             }
             catch (Exception e) {
                 throw new JsonException("JsonException reading array element " + i, e);
