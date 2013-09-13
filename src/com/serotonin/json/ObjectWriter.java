@@ -11,23 +11,7 @@ import java.io.IOException;
  * 
  * @author Matthew Lohbihler
  */
-public class ObjectWriter {
-    private final JsonWriter writer;
-    private boolean first = true;
-
-    /**
-     * Constructs an ObjectWriter and starts the object serialization by writing a '{' to the JsonWriter.
-     * 
-     * @param writer
-     * @throws IOException
-     */
-    public ObjectWriter(JsonWriter writer) throws IOException {
-        this.writer = writer;
-
-        writer.append('{');
-        writer.increaseIndent();
-    }
-
+public interface ObjectWriter {
     /**
      * Writes a single object to the JsonWriter
      * 
@@ -39,16 +23,7 @@ public class ObjectWriter {
      * @throws IOException
      * @throws JsonException
      */
-    public void writeEntry(String name, Object value) throws IOException, JsonException {
-        if (first)
-            first = false;
-        else
-            writer.append(',');
-        writer.indent();
-        writer.quote(name);
-        writer.append(':');
-        writer.writeObject(value);
-    }
+    public void writeEntry(String name, Object value) throws IOException, JsonException;
 
     /**
      * Closes the object by writing a '}' to the JsonWriter. Remember to always call this method for every ObjectWriter
@@ -56,19 +31,5 @@ public class ObjectWriter {
      * 
      * @throws IOException
      */
-    public void finish() throws IOException {
-        writer.decreaseIndent();
-        writer.indent();
-        writer.append('}');
-    }
-
-    /**
-     * Access the underlying JsonWriter object. This method is for advanced usage only. For most purposes the writeEntry
-     * method is sufficient.
-     * 
-     * @return the underlying JsonWriter object
-     */
-    public JsonWriter getWriter() {
-        return writer;
-    }
+    public void finish() throws IOException;
 }

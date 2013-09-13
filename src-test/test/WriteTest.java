@@ -50,6 +50,11 @@ public class WriteTest {
         write(new Compound());
 
         write(new SerTest());
+
+        Mutable mutable = new Mutable();
+        mutable.setS1("asdf");
+        mutable.setS2("zxcv");
+        write(mutable);
     }
 
     static void write(Object o) throws Exception {

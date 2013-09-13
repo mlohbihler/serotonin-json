@@ -4,13 +4,12 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.serotonin.json.JsonContext;
 import com.serotonin.json.JsonReader;
-import com.serotonin.json.type.JsonArray;
-import com.serotonin.json.type.JsonObject;
-import com.serotonin.json.type.JsonString;
 import com.serotonin.json.util.TypeDefinition;
 
 public class ReadTest {
@@ -20,13 +19,12 @@ public class ReadTest {
             "{\"myId\":\"Subclass2\",\"sub2Value\":\"sub2\",\"baseValue\":\"base\"}", };
 
     public static void main(String[] args) throws Exception {
-        read("\"k\"", JsonString.class);
-        read("\"k\"", new JsonString(""), JsonString.class);
-        read("{\"bigi\":1234567890123456,\"bigd\":1234567890123456.7890123456789,}", JsonObject.class);
-        read("{\"bigi\":1234567890123456,\"bigd\":1234567890123456.7890123456789,}", new JsonObject(), JsonObject.class);
+        read("\"k\"", String.class);
         read("{\"bigi\":1234567890123456,\"bigd\":1234567890123456.7890123456789,}", Object.class);
-        read("[\"qwer\",\"asdf\",\"zxcv\",]", JsonArray.class);
-        read("[\"qwer\",\"asdf\",\"zxcv\",]", new JsonArray(), JsonArray.class);
+        read("{\"bigi\":1234567890123456,\"bigd\":1234567890123456.7890123456789,}", new TypeDefinition(Map.class,
+                String.class, BigDecimal.class));
+        read("{\"bigi\":1234567890123456,\"bigd\":1234567890123456.7890123456789,}", new TypeDefinition(HashMap.class,
+                String.class, BigDecimal.class));
 
         read("true", Boolean.TYPE);
         read("true", Boolean.class);
@@ -42,6 +40,7 @@ public class ReadTest {
         read("1234567890123456789012345678901234567890.1234567890123456789012345678901234567890", BigDecimal.class);
 
         read("[\"qwer\",\"asdf\",\"zxcv\",]", new TypeDefinition(List.class, String.class));
+        read("[\"qwer\",\"asdf\",\"zxcv\",]", new TypeDefinition(ArrayList.class, String.class));
 
         // read("{\"34\":\"34\",\"list\":[\"qwer\",\"asdf\",\"zxcv\"],\"34\":34}", new TypeDefinition(Map.class, null,
         // String.class));
@@ -71,6 +70,8 @@ public class ReadTest {
                 String[].class));
 
         read("{\"rows\":[[\"a1\",\"b1\",\"c1\"],[\"a2\",\"b2\",\"c2\"],[\"a3\",\"b3\",\"c3\"]]}", ListArray.class);
+
+        read("{\"s1\":\"asdf\",\"s2\":\"zxcv\"}", new Mutable(), Mutable.class);
     }
 
     static void read(String data, Type type) throws Exception {

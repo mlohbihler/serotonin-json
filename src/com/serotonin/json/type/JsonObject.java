@@ -1,152 +1,199 @@
 package com.serotonin.json.type;
 
-import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-import com.serotonin.json.JsonException;
+public class JsonObject extends JsonValue implements Map<String, JsonValue> {
+    private final Map<String, JsonValue> delegate = new HashMap<String, JsonValue>();
 
-/**
- * Extends JsonValue to represent an object.
- * 
- * @author Matthew Lohbihler
- */
-public class JsonObject extends JsonValue {
-    private final Map<String, JsonValue> properties = new HashMap<String, JsonValue>();
-
-    public JsonObject() {
-        // no op
+    //
+    // Map interface
+    @Override
+    public int size() {
+        return delegate.size();
     }
 
-    public JsonObject(JsonTypeReader reader) throws JsonException, IOException {
-        reader.validateNextChar('{');
-        while (!reader.testNextChar('}', true)) {
-            String name = reader.readString(reader.nextElement());
-            reader.validateNextChar(':');
-            properties.put(name, reader.read());
-            reader.discardOptionalComma();
-        }
-        reader.nextChar(true);
+    @Override
+    public boolean isEmpty() {
+        return delegate.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return delegate.containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return delegate.containsValue(value);
+    }
+
+    @Override
+    public JsonValue get(Object key) {
+        return delegate.get(key);
+    }
+
+    @Override
+    public JsonValue put(String key, JsonValue value) {
+        return delegate.put(key, value);
+    }
+
+    @Override
+    public JsonValue remove(Object key) {
+        return delegate.remove(key);
+    }
+
+    @Override
+    public void putAll(Map<? extends String, ? extends JsonValue> m) {
+        delegate.putAll(m);
+    }
+
+    @Override
+    public void clear() {
+        delegate.clear();
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return delegate.keySet();
+    }
+
+    @Override
+    public Collection<JsonValue> values() {
+        return delegate.values();
+    }
+
+    @Override
+    public Set<java.util.Map.Entry<String, JsonValue>> entrySet() {
+        return delegate.entrySet();
     }
 
     @Override
     public String toString() {
-        return properties.toString();
+        return delegate.toString();
     }
 
-    public boolean hasProperty(String name) {
-        return properties.containsKey(name);
+    //
+    // Convenience
+    public void put(String key, boolean b) {
+        put(key, new JsonBoolean(b));
     }
 
-    public JsonValue getValue(String name) {
-        return properties.get(name);
+    public void put(String key, String s) {
+        put(key, new JsonString(s));
     }
 
-    public void setValue(String name, JsonValue value) {
-        properties.put(name, value);
+    public void put(String key, int i) {
+        put(key, new JsonNumber(new BigDecimal(i)));
     }
 
-    public JsonValue removeValue(String name) {
-        return properties.remove(name);
+    public void put(String key, long l) {
+        put(key, new JsonNumber(new BigDecimal(l)));
     }
 
-    public Map<String, JsonValue> getProperties() {
-        return properties;
+    public void put(String key, float f) {
+        put(key, new JsonNumber(new BigDecimal(f)));
     }
 
-    public boolean isNull(String name) {
-        JsonValue value = properties.get(name);
-        return value == null || value.isNull();
+    public void put(String key, double d) {
+        put(key, new JsonNumber(new BigDecimal(d)));
     }
 
-    public Boolean getBoolean(String name) {
-        JsonValue value = properties.get(name);
-        if (value == null || value.isNull())
-            return null;
-        return ((JsonBoolean) value).getValue();
+    public void put(String key, BigInteger bi) {
+        put(key, new JsonNumber(new BigDecimal(bi)));
     }
 
-    public boolean getBoolean(String name, boolean defaultValue) {
-        Boolean v = getBoolean(name);
-        if (v == null)
+    public JsonObject getJsonObject(String key) {
+        return (JsonObject) delegate.get(key);
+    }
+
+    public JsonArray getJsonArray(String key) {
+        return (JsonArray) delegate.get(key);
+    }
+
+    public JsonNumber getJsonNumber(String key) {
+        return (JsonNumber) delegate.get(key);
+    }
+
+    public JsonBoolean getJsonBoolean(String key) {
+        return (JsonBoolean) delegate.get(key);
+    }
+
+    public JsonString getJsonString(String key) {
+        return (JsonString) delegate.get(key);
+    }
+
+    public boolean getBoolean(String key) {
+        return getJsonBoolean(key).toBoolean();
+    }
+
+    public boolean getBoolean(String key, boolean defaultValue) {
+        JsonBoolean jb = getJsonBoolean(key);
+        if (jb == null)
             return defaultValue;
-        return v;
+        return jb.toBoolean();
     }
 
-    public JsonObject getJsonObject(String name) {
-        JsonValue value = properties.get(name);
-        if (value == null || value.isNull())
+    public String getString(String key) {
+        JsonString js = getJsonString(key);
+        if (js == null)
             return null;
-        return (JsonObject) value;
+        return js.toString();
     }
 
-    public JsonArray getJsonArray(String name) {
-        JsonValue value = properties.get(name);
-        if (value == null || value.isNull())
-            return null;
-        return (JsonArray) value;
+    public int getInt(String key) {
+        return getJsonNumber(key).intValue();
     }
 
-    public String getString(String name) {
-        JsonValue value = properties.get(name);
-        if (value == null || value.isNull())
-            return null;
-        return ((JsonString) value).getValue();
-    }
-
-    public Long getLong(String name) {
-        JsonValue value = properties.get(name);
-        if (value == null || value.isNull())
-            return null;
-        return ((JsonNumber) value).getLongValue();
-    }
-
-    public long getLong(String name, long defaultValue) {
-        Long v = getLong(name);
-        if (v == null)
+    public int getInt(String key, int defaultValue) {
+        JsonNumber jn = getJsonNumber(key);
+        if (jn == null)
             return defaultValue;
-        return v;
+        return jn.intValue();
     }
 
-    public Double getDouble(String name) {
-        JsonValue value = properties.get(name);
-        if (value == null || value.isNull())
-            return null;
-        return ((JsonNumber) value).getDoubleValue();
+    public long getLong(String key) {
+        return getJsonNumber(key).longValue();
     }
 
-    public double getDouble(String name, double defaultValue) {
-        Double v = getDouble(name);
-        if (v == null)
+    public long getLong(String key, long defaultValue) {
+        JsonNumber jn = getJsonNumber(key);
+        if (jn == null)
             return defaultValue;
-        return v;
+        return jn.longValue();
     }
 
-    public Float getFloat(String name) {
-        JsonValue value = properties.get(name);
-        if (value == null || value.isNull())
-            return null;
-        return ((JsonNumber) value).getFloatValue();
+    public float getFloat(String key) {
+        return getJsonNumber(key).floatValue();
     }
 
-    public float getFloat(String name, float defaultValue) {
-        Float v = getFloat(name);
-        if (v == null)
+    public float getFloat(String key, float defaultValue) {
+        JsonNumber jn = getJsonNumber(key);
+        if (jn == null)
             return defaultValue;
-        return v;
+        return jn.floatValue();
     }
 
-    public Integer getInt(String name) {
-        JsonValue value = properties.get(name);
-        if (value == null || value.isNull())
-            return null;
-        return ((JsonNumber) value).getIntValue();
+    public double getDouble(String key) {
+        return getJsonNumber(key).doubleValue();
     }
 
-    public int getInt(String name, int defaultValue) {
-        Integer v = getInt(name);
-        if (v == null)
+    public double getDouble(String key, double defaultValue) {
+        JsonNumber jn = getJsonNumber(key);
+        if (jn == null)
             return defaultValue;
-        return v;
+        return jn.doubleValue();
+    }
+
+    public BigInteger getBigInteger(String key) {
+        return getJsonNumber(key).bigIntegerValue();
+    }
+
+    public BigDecimal getBigDecimal(String key) {
+        return getJsonNumber(key).bigDecimalValue();
     }
 }

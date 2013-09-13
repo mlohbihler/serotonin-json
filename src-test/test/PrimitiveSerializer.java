@@ -22,8 +22,8 @@ public class PrimitiveSerializer implements ClassSerializer<Primitives> {
 
     @Override
     public Primitives jsonRead(JsonReader reader, JsonObject jsonObject, Primitives primitives) throws JsonException {
-        primitives.setBigInteger(jsonObject.getValue("bigi").toJsonNumber().getBigInteger());
-        primitives.setBigDecimal(jsonObject.getValue("bigd").toJsonNumber().getBigDecimal());
+        primitives.setBigInteger(jsonObject.getBigInteger("bigi"));
+        primitives.setBigDecimal(jsonObject.getBigDecimal("bigd"));
         return primitives;
     }
 }

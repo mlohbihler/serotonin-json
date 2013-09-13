@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * An annotation with which properties can be marked as being convertible. Can be applied to fields or methods. If any
- * such annotations are found in a class, it will not be treated as a bean. This works in conjuction with the
+ * such annotations are found in a class, it will not be treated as a bean. This works in conjunction with the
  * JsonSerializable interface, such that any properties that cannot be simply dealt with by annotating can be handled in
  * the JsonSerializable methods.
  * 
@@ -17,14 +17,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JsonProperty {
     /**
-     * Whether the property is readable.
+     * Whether the property should be *read from the JSON* and *written into the object*, AKA deserialized.
      * 
      * @return true if the property is readable. Defaults to true.
      */
     boolean read() default true;
 
     /**
-     * Whether the property is writable.
+     * Whether the property should be *read from the object* and *written into the JSON*, AKA serialized.
      * 
      * @return true if the property is writable. Defaults to true.
      */

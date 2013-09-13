@@ -9,6 +9,7 @@ import com.serotonin.json.JsonReader;
 import com.serotonin.json.JsonWriter;
 import com.serotonin.json.ObjectWriter;
 import com.serotonin.json.type.JsonObject;
+import com.serotonin.json.type.JsonTypeWriter;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.json.util.TypeUtils;
 
@@ -19,14 +20,18 @@ import com.serotonin.json.util.TypeUtils;
  */
 public class MapConverter extends AbstractClassConverter {
     @Override
-    public void jsonWrite(JsonWriter writer, Object value) throws IOException, JsonException {
-        Map<?, ?> map;
-        if (value instanceof JsonObject)
-            map = ((JsonObject) value).getProperties();
-        else
-            map = (Map<?, ?>) value;
+    public JsonValue jsonWrite(JsonTypeWriter writer, Object value) throws JsonException {
+        Map<?, ?> map = (Map<?, ?>) value;
+        JsonObject jsonObject = new JsonObject();
+        for (Map.Entry<?, ?> entry : map.entrySet())
+            jsonObject.put(entry.getKey().toString(), writer.writeObject(entry.getValue()));
+        return jsonObject;
+    }
 
-        ObjectWriter objectWriter = new ObjectWriter(writer);
+    @Override
+    public void jsonWrite(JsonWriter writer, Object value) throws IOException, JsonException {
+        Map<?, ?> map = (Map<?, ?>) value;
+        ObjectWriter objectWriter = new ObjectJsonWriter(writer);
         for (Map.Entry<?, ?> entry : map.entrySet())
             objectWriter.writeEntry(entry.getKey().toString(), entry.getValue());
         objectWriter.finish();
@@ -34,14 +39,14 @@ public class MapConverter extends AbstractClassConverter {
 
     @Override
     public void jsonRead(JsonReader reader, JsonValue jsonValue, Object obj, Type type) throws JsonException {
-        JsonObject jsonObject = jsonValue.toJsonObject();
+        JsonObject jsonObject = (JsonObject) jsonValue;
 
         @SuppressWarnings("unchecked")
         Map<Object, Object> map = (Map<Object, Object>) obj;
 
         Type valueType = TypeUtils.getActualTypeArgument(type, 1);
 
-        for (Map.Entry<String, JsonValue> entry : jsonObject.getProperties().entrySet())
+        for (Map.Entry<String, JsonValue> entry : jsonObject.entrySet())
             map.put(entry.getKey(), reader.read(valueType, entry.getValue()));
     }
 }

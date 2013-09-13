@@ -9,6 +9,7 @@ import com.serotonin.json.JsonException;
 import com.serotonin.json.JsonReader;
 import com.serotonin.json.JsonWriter;
 import com.serotonin.json.type.JsonArray;
+import com.serotonin.json.type.JsonTypeWriter;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.json.util.TypeUtils;
 
@@ -19,12 +20,21 @@ import com.serotonin.json.util.TypeUtils;
  */
 public class CollectionConverter extends AbstractClassConverter {
     @Override
+    public JsonValue jsonWrite(JsonTypeWriter writer, Object value) throws JsonException {
+        JsonArray jsonArray = new JsonArray();
+
+        Iterator<?> iterator = ((Collection<?>) value).iterator();
+        while (iterator.hasNext()) {
+            Object o = iterator.next();
+            jsonArray.add(writer.writeObject(o));
+        }
+
+        return jsonArray;
+    }
+
+    @Override
     public void jsonWrite(JsonWriter writer, Object object) throws IOException, JsonException {
-        Iterator<?> iterator;
-        if (object instanceof JsonArray)
-            iterator = ((JsonArray) object).getElements().iterator();
-        else
-            iterator = ((Collection<?>) object).iterator();
+        Iterator<?> iterator = ((Collection<?>) object).iterator();
 
         writer.append('[');
         writer.increaseIndent();
@@ -45,14 +55,14 @@ public class CollectionConverter extends AbstractClassConverter {
 
     @Override
     public void jsonRead(JsonReader reader, JsonValue jsonValue, Object obj, Type type) throws JsonException {
-        JsonArray jsonArray = jsonValue.toJsonArray();
+        JsonArray jsonArray = (JsonArray) jsonValue;
 
         @SuppressWarnings("unchecked")
         Collection<Object> collection = (Collection<Object>) obj;
 
         Type innerType = TypeUtils.getActualTypeArgument(type, 0);
 
-        for (JsonValue element : jsonArray.getElements())
+        for (JsonValue element : jsonArray)
             collection.add(reader.read(innerType, element));
     }
 }

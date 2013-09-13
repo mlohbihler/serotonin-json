@@ -18,8 +18,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.serotonin.json.convert.ArrayConverter;
 import com.serotonin.json.convert.BigDecimalConverter;
 import com.serotonin.json.convert.BigIntegerConverter;
@@ -32,11 +30,11 @@ import com.serotonin.json.convert.FloatConverter;
 import com.serotonin.json.convert.IntegerConverter;
 import com.serotonin.json.convert.JsonArrayConverter;
 import com.serotonin.json.convert.JsonBooleanConverter;
-import com.serotonin.json.convert.JsonNullConverter;
 import com.serotonin.json.convert.JsonNumberConverter;
 import com.serotonin.json.convert.JsonObjectConverter;
 import com.serotonin.json.convert.JsonPropertyConverter;
 import com.serotonin.json.convert.JsonStringConverter;
+import com.serotonin.json.convert.JsonValueConverter;
 import com.serotonin.json.convert.LongConverter;
 import com.serotonin.json.convert.MapConverter;
 import com.serotonin.json.convert.ObjectConverter;
@@ -57,13 +55,13 @@ import com.serotonin.json.spi.ObjectFactory;
 import com.serotonin.json.spi.TypeResolver;
 import com.serotonin.json.type.JsonArray;
 import com.serotonin.json.type.JsonBoolean;
-import com.serotonin.json.type.JsonNull;
 import com.serotonin.json.type.JsonNumber;
 import com.serotonin.json.type.JsonObject;
 import com.serotonin.json.type.JsonString;
 import com.serotonin.json.type.JsonValue;
 import com.serotonin.json.util.MaxCharacterCountExceededException;
 import com.serotonin.json.util.SerializableProperty;
+import com.serotonin.json.util.Utils;
 
 /**
  * The JsonContext is the central repository of converters and factories for all JSON conversion. Typically, an
@@ -125,10 +123,10 @@ public class JsonContext {
         // Native JSON types
         addConverter(new JsonArrayConverter(), JsonArray.class);
         addConverter(new JsonBooleanConverter(), JsonBoolean.class);
-        addConverter(new JsonNullConverter(), JsonNull.class);
         addConverter(new JsonNumberConverter(), JsonNumber.class);
         addConverter(new JsonObjectConverter(), JsonObject.class);
         addConverter(new JsonStringConverter(), JsonString.class);
+        addConverter(new JsonValueConverter(), JsonValue.class);
 
         // Interface and array converters
         addConverter(new ArrayConverter(), Array.class);
@@ -305,11 +303,11 @@ public class JsonContext {
                 continue;
 
             Method readMethod = descriptor.getReadMethod();
-            if (!anno.read() || (readMethod != null && readMethod.getDeclaringClass() != clazz))
+            if (!anno.write() || (readMethod != null && readMethod.getDeclaringClass() != clazz))
                 readMethod = null;
 
             Method writeMethod = descriptor.getWriteMethod();
-            if (!anno.write() || (writeMethod != null && writeMethod.getDeclaringClass() != clazz))
+            if (!anno.read() || (writeMethod != null && writeMethod.getDeclaringClass() != clazz))
                 writeMethod = null;
 
             if (readMethod == null && writeMethod == null)
@@ -323,7 +321,7 @@ public class JsonContext {
 
             prop.setReadMethod(readMethod);
             prop.setWriteMethod(writeMethod);
-            if (!StringUtils.isEmpty(anno.alias()))
+            if (!Utils.isEmpty(anno.alias()))
                 prop.setAlias(anno.alias());
             prop.setSuppressDefaultValue(anno.suppressDefaultValue());
             prop.setIncludeHints(anno.includeHints());
@@ -369,7 +367,7 @@ public class JsonContext {
             return;
 
         for (SerializableProperty p : properties) {
-            if (StringUtils.equals(p.getNameToUse(), prop.getNameToUse())) {
+            if (Utils.equals(p.getNameToUse(), prop.getNameToUse())) {
                 if (p.getReadMethod() == null && prop.getReadMethod() != null)
                     p.setReadMethod(prop.getReadMethod());
 
@@ -411,7 +409,7 @@ public class JsonContext {
                 name = Character.toLowerCase(name.charAt(2)) + name.substring(3);
             }
             else {
-                if (!name.startsWith("get"))
+                if (!name.startsWith("get") && !name.startsWith("set"))
                     throw new JsonException("Non-JavaBean get methods cannot be marked with JsonRemoteProperty: "
                             + clazz.getName() + "." + name);
                 name = Character.toLowerCase(name.charAt(3)) + name.substring(4);
