@@ -244,6 +244,7 @@ public class JsonContext {
         //
         // Introspect the class.
         boolean jsonSerializable = JsonSerializable.class.isAssignableFrom(clazz);
+        boolean jsonEntity = clazz.isAnnotationPresent(JsonEntity.class);
         List<SerializableProperty> properties = new ArrayList<SerializableProperty>();
 
         BeanInfo info;
@@ -272,7 +273,7 @@ public class JsonContext {
             properties = null;
 
         // Create a converter?
-        if (jsonSerializable || properties != null) {
+        if (jsonSerializable || jsonEntity || properties != null) {
             converter = new JsonPropertyConverter(jsonSerializable, properties);
             classConverters.put(clazz, converter);
             return converter;
