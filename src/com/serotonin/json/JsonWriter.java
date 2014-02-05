@@ -64,6 +64,11 @@ public class JsonWriter {
     private boolean prettyOutput = false;
 
     /**
+     * Determines whether forward slashes ('/') in strings should be escaped (true) or not (false).
+     */
+    private boolean escapeForwardSlash = true;
+
+    /**
      * The amount to indent pretty output. Has no effect if prettyOutput is false. Defaults to two spaces.
      */
     private String prettyIndent = "  ";
@@ -82,7 +87,10 @@ public class JsonWriter {
      * @param writer
      */
     public JsonWriter(Writer writer) {
-        this(new JsonContext(), writer);
+        this.context = new JsonContext();
+        this.writer = writer;
+        includeHint = null;
+        escapeForwardSlash = false;
     }
 
     /**
@@ -97,6 +105,7 @@ public class JsonWriter {
         this.context = context;
         this.writer = writer;
         includeHint = context.getDefaultIncludeHint();
+        escapeForwardSlash = context.isEscapeForwardSlash();
     }
 
     public boolean isTrackAlreadySerialized() {
@@ -117,6 +126,14 @@ public class JsonWriter {
 
     public int getPrettyIndent() {
         return prettyIndent.length();
+    }
+
+    public boolean isEscapeForwardSlash() {
+        return escapeForwardSlash;
+    }
+
+    public void setEscapeForwardSlash(boolean escapeForwardSlash) {
+        this.escapeForwardSlash = escapeForwardSlash;
     }
 
     public void setPrettyIndent(int prettyIndent) {
@@ -237,7 +254,7 @@ public class JsonWriter {
                 writer.append(c);
                 break;
             case '/':
-                if (context.isEscapeForwardSlash())
+                if (escapeForwardSlash)
                     writer.append('\\');
                 writer.append(c);
                 break;
