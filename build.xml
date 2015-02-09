@@ -1,10 +1,33 @@
 <?xml version="1.0"?>
 
-<project name="Serotonin JSON" basedir="." default="deploy">
-	<property file="build.properties" />
+<project name="serotonin-json" basedir="." default="deploy" xmlns:mvn="antlib:org.apache.maven.artifact.ant">
+    <property file="library.properties" />
 
-	<path id="master-classpath">
-		<fileset dir="lib">
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="lib-opt/ant-contrib-1.0b3.jar" />
+    <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+            uri="antlib:org.apache.maven.artifact.ant"
+            classpath="lib-opt/maven-ant-tasks-2.1.3.jar" />
+
+    <!-- Define the maven included deps (if any) -->
+    <available property="pom.exists" file="pom.xml" type="file" />
+    <if>
+        <isset property="pom.exists"/>
+        <then>
+            <mvn:pom file="pom.xml" id="maven-pom" />
+            <mvn:dependencies filesetId="maven-deps" type="jar" pomRefId="maven-pom" />
+            <mvn:dependencies filesetId="maven-deps-runtime" type="jar" pomRefId="maven-pom" useScope="runtime" />
+            <property name="fullName" value="${maven-pom.artifactId}-${maven-pom.version}" />
+            <property name="vendor" value="Infinite Automation Software and Serotonin Software" />
+        </then>
+        <else>
+           <echo message="No Maven POM Found!" />
+        </else>
+    </if>
+
+   	<path id="master-classpath">
+        <fileset refid="maven-deps" />
+        <fileset refid="maven-deps-runtime" />
+        <fileset dir="lib">
 			<include name="*.jar" />
 		</fileset>
 		<pathelement path="target/classes" />
@@ -16,54 +39,84 @@
 
 	<target name="compile" description="Compile main source tree java files">
 		<mkdir dir="target/classes" />
-		<javac destdir="target/classes" target="1.5" source="1.5" debug="true" debuglevel="lines,vars,source" deprecation="true" optimize="false" failonerror="true">
+		<javac destdir="target/classes" target="1.7" source="1.7" debug="true" debuglevel="lines,vars,source"
+                deprecation="true" optimize="false" failonerror="true" includeantruntime="false">
 			<src path="src" />
 			<classpath refid="master-classpath" />
 		</javac>
 	</target>
 
 	<target name="jar" depends="clean,compile" description="Create a jar file of the compiled classes">
-		<delete file="serotonin-JSON.jar" />
-		<jar destfile="serotonin-JSON.jar">
-			<fileset dir="target/classes">
-				<include name="**/*.class" />
-			</fileset>
-		</jar>
+        <delete file="target/release/${fullName}.jar" />
+        <delete file="target/classes/MANIFEST.MF" />
+        <tstamp>
+            <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+        </tstamp>
+
+        <manifest file="target/classes/MANIFEST.MF">
+            <attribute name="Built-By" value="${vendor}" />
+            <attribute name="Build-Date" value="${TODAY}" />
+            <attribute name="Version" value="${maven-pom.version}" />
+        </manifest>
+
+        <mkdir dir="target/classes/lib" />
+        <mkdir dir="target/classes/META-INF"/>
+        
+        <if>
+            <istrue value="${includeSource}"/>
+            <then>
+                <copy todir="target/classes/src" preservelastmodified="true">
+                    <fileset dir="src"><include name="**/*.*"/></fileset>
+                </copy>
+            </then>
+        </if>
+        
+        <available property="scripts.exists" file="scripts" type="dir" />
+        <if>
+            <isset property="scripts.exists"/>
+            <then>
+                <copy todir="target/classes/bin" preservelastmodified="true">
+                    <fileset dir="scripts"><include name="**/*"/></fileset>
+                </copy>
+            </then>
+        </if>
+        
+        <jar destfile="target/release/${fullName}.jar" manifest="target/classes/MANIFEST.MF">
+            <fileset dir="target/classes">
+                <include name="**/*.class" />
+                <include name="**/*.java" />
+                <exclude name="MANIFEST.MF" />
+                <include name="META-INF/*.*"/>
+            </fileset>
+        </jar>
 	</target>
 
-	<target name="src-zip" description="Create a jar file of the source">
-		<delete file="serotonin-JSON-src.zip" />
-		<zip destfile="serotonin-JSON-src.zip">
-			<fileset dir="src">
-				<include name="**/*.java" />
-			</fileset>
-			<fileset dir="src-test">
-				<include name="**/*.java" />
-			</fileset>
-		</zip>
-	</target>
+    <target name="docs" description="Generate Java Doc">
+        <javadoc sourcepath="src" destdir="target/classes/doc" classpathref="master-classpath"/>
+    </target>
 
-	<target name="doc-zip" description="Create a jar file of the javadocs">
-		<delete file="serotonin-JSON-doc.zip" />
-		<zip destfile="serotonin-JSON-doc.zip">
-			<fileset dir="javadoc">
-				<include name="**/*" />
-			</fileset>
-		</zip>
-	</target>
-
-    <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="lib-opt/ant-contrib-1.0b3.jar" />
-	<target name="deploy" depends="jar,src-zip" description="Copy the jar file to the places where it is needed">
-		<foreach list="${deploy.jar.paths}" target="|deploy" param="todir" delimiter=":">
-			<param name="deploy.file" value="serotonin-JSON.jar" />
-		</foreach>
-
-		<foreach list="${deploy.src.paths}" target="|deploy" param="todir" delimiter=":">
-			<param name="deploy.file" value="serotonin-JSON-src.zip" />
-		</foreach>
-	</target>
-
-	<target name="|deploy">
-		<copy todir="${todir}" preservelastmodified="true" file="${deploy.file}" />
-	</target>
+    <target name="jar-src" description="Create a jar file of the sources">
+        <delete file="target/release/${fullName}-src.jar" />
+        <jar destfile="target/release/${fullName}-src.jar">
+            <fileset dir="src">
+                <include name="**/*.java" />
+            </fileset>
+        </jar>
+    </target>
+    
+    <target name="deploy" depends="jar" description="Install library to Maven repository located at ${maven.local}">
+        <if>
+            <isset property="maven.local"/>
+            <then>      
+                <mvn:deploy file="target/release/${fullName}.jar">
+                    <remoterepository url="file://${maven.local}"/>
+                    <pom refid="maven-pom"/>
+                </mvn:deploy>
+            </then>
+        </if>
+        
+        <mvn:install file="target/release/${fullName}.jar">
+            <pom refid="maven-pom"/>
+        </mvn:install>
+    </target>
 </project>
