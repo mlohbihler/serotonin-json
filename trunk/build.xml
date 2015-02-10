@@ -96,8 +96,8 @@
     </target>
 
     <target name="jar-src" description="Create a jar file of the sources">
-        <delete file="target/release/${fullName}-src.jar" />
-        <jar destfile="target/release/${fullName}-src.jar">
+        <delete file="target/release/${fullName}-sources.jar" />
+        <jar destfile="target/release/${fullName}-sources.jar">
             <fileset dir="src">
                 <include name="**/*.java" />
             </fileset>
